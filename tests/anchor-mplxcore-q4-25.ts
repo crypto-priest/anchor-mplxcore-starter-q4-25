@@ -302,4 +302,42 @@ describe("anchor-mplxcore-q4-25", () => {
       }
     });
   });
+
+  describe("UpdateNft", () => {
+    it("Update an NFT name", async () => {
+      await program.methods
+        .updateNft("Updated NFT Name")
+        .accountsStrict({
+          authority: creator.publicKey,
+          asset: asset.publicKey,
+          collection: collection.publicKey,
+          collectionAuthority: collectionAuthorityPda,
+          coreProgram: MPL_CORE_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([creator])
+        .rpc();
+
+    });
+
+    it("Fails to update with unauthorized authority", async () => {
+      try {
+        await program.methods
+          .updateNft("Should Not Work")
+          .accountsStrict({
+            authority: unauthorizedAuthority.publicKey,
+            asset: asset.publicKey,
+            collection: collection.publicKey,
+            collectionAuthority: collectionAuthorityPda,
+            coreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([unauthorizedAuthority])
+          .rpc();
+        assert.fail("Should have failed with unauthorized authority");
+      } catch (err) {
+        assert.equal(err.error.errorCode.code, "NotAuthorized", "Expected NotAuthorized error");
+      }
+    });
+  });
 });
